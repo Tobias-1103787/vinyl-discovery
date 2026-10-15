@@ -11,16 +11,16 @@ return new class extends Migration
      */
     public function up(): void
     {
-        //Vinyls table
-        Schema::create('vinyls', function (Blueprint $table) {
+        //Vinyl table
+        Schema::create('vinyl', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('label_id');
-            $table->foreignId('artist_connection_id');
-            $table->foreignId('genre_connection_id');
+            $table->foreignId('label_id')->constrained();
+            $table->foreignId('artist_connection_id')->constrained();
+            $table->foreignId('genre_connection_id')->constrained();
             $table->string('format');
             $table->string('external_link');
             $table->timestamp('release_date');
-            $table->foreignId('created_by');
+            $table->foreignId('created_by')->constrained();
         });
     }
 
@@ -29,6 +29,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('vinyls');
+        Schema::dropIfExists('vinyl');
     }
 };

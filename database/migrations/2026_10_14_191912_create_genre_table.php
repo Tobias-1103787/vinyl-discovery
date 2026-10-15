@@ -11,12 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        //Labels table
-        Schema::create('labels', function (Blueprint $table) {
+        //Genre table
+        Schema::create('genre', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->string('description');
-            $table->string('link');
         });
     }
 
@@ -25,6 +23,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('labels');
+        Schema::dropIfExists('genre');
     }
 };

@@ -11,12 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        //Favorites table
-        Schema::create('favorites', function (Blueprint $table) {
+        //Artist/band table
+        Schema::create('artist', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('vinyl_id');
-            $table->foreignId('user_id');
-            $table->timestamp('created_at');
+            $table->boolean('is_band');
+            $table->string('description');
+            $table->string('members');
         });
     }
 
@@ -25,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('favorites');
+        Schema::dropIfExists('artist');
     }
 };

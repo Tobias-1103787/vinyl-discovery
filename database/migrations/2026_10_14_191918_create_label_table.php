@@ -11,12 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        //Artists/band table
-        Schema::create('artists', function (Blueprint $table) {
+        //Labels table
+        Schema::create('label', function (Blueprint $table) {
             $table->id();
-            $table->boolean('is_band');
+            $table->string('name');
             $table->string('description');
-            $table->string('members');
+            $table->string('link');
         });
     }
 
@@ -25,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('artists');
+        Schema::dropIfExists('label');
     }
 };

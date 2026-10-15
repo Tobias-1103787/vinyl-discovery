@@ -11,10 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        //Genres table
-        Schema::create('genres', function (Blueprint $table) {
+        //Favorite table
+        Schema::create('favorite', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
+            $table->foreignId('vinyl_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('user_id')->constrained();
+            $table->timestamp('created_at');
         });
     }
 
@@ -23,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('genres');
+        Schema::dropIfExists('favorite');
     }
 };

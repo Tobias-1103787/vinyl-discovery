@@ -14,8 +14,8 @@ return new class extends Migration
         //Genre_connection table
         Schema::create('genre_connection', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('vinyl_id');
-            $table->foreignId('genre_id');
+            $table->foreignId('vinyl_id')->constrained();
+            $table->foreignId('genre_id')->constrained();
         });
     }
 
