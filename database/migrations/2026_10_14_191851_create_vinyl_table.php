@@ -15,8 +15,6 @@ return new class extends Migration
         Schema::create('vinyl', function (Blueprint $table) {
             $table->id();
             $table->foreignId('label_id')->constrained();
-            $table->foreignId('artist_connection_id')->constrained();
-            $table->foreignId('genre_connection_id')->constrained();
             $table->string('format');
             $table->string('external_link');
             $table->timestamp('release_date');
