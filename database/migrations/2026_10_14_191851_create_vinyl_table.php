@@ -14,11 +14,14 @@ return new class extends Migration
         //Vinyl table
         Schema::create('vinyl', function (Blueprint $table) {
             $table->id();
+            $table->string('title');
             $table->foreignId('label_id')->constrained();
             $table->string('format');
-            $table->string('external_link');
-            $table->timestamp('release_date');
-            $table->foreignId('created_by')->constrained();
+            $table->string('external_link')->nullable();
+            $table->unsignedBigInteger('discogs_id')->nullable()->index();
+            $table->string('cover_url', 500)->nullable();
+            $table->date('release_date');
+            $table->foreignId('created_by')->constrained('users');
         });
     }
 

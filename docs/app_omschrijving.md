@@ -32,3 +32,8 @@ Admin:
 - Won't have:
   - vinyl-verkoop
   - prijs, staat etc. weergave
+
+# Omgang met Discogs:
+Er zijn één of twee functies waarin je communiceert met de API van Discogs:
+- SingleFetch: Met deze functie haal je de data van één vinyl op met de Discogs link
+- Fetch (TBD): Met deze functie haal je de data van de vinyl van één artiest, label of andere verzameling op.
