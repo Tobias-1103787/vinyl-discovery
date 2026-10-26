@@ -8,10 +8,8 @@ Route::get('/', function () {
     return view('index');
 });
 
-Route::get('/vinyls', [VinylController::class, 'index'])->name('vinyls.index');
-Route::get('/vinyls/create', [VinylController::class, 'create'])->name('vinyls.create');
-
-
+Route::resource('/vinyls', VinylController::class);
+Route::post('/vinyls/create', [VinylController::class, 'discogSearch'])->name('vinyls.discogSearch');
 
 Route::get('/dashboard', function () {
     return view('dashboard');

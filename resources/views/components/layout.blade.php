@@ -16,7 +16,7 @@
 
             <div class="flex items-center gap-4">
                 @auth
-                    <a href="{{ route('vinyls.create') }}"
+                    <a href="https://vinyl-discovery.test/vinyls/create"
                        class="rounded bg-indigo-600 px-4 py-2 text-sm font-medium hover:bg-indigo-500">
                         New
                     </a>

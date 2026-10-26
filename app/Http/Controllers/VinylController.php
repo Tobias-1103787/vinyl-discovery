@@ -2,7 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\DiscogsService;
 use Illuminate\Http\Request;
+use Calliostro\Discogs\DiscogsClientFactory;
+
+use Illuminate\Support\Facades\DB;
 
 class VinylController extends Controller
 {
@@ -20,8 +24,35 @@ class VinylController extends Controller
      */
     public function create()
     {
+        //DB::insert('insert into vinyl ()');
         //TEMP
-        return view('index');
+        return view('create', ['vinyl' => null]);
+    }
+
+    public function discogSearch(Request $request, DiscogsService $discogsService)
+    {
+        $discogs = DiscogsClientFactory::create();
+
+        $input = trim($request->validate(['query' => 'required|string'])['query']);
+
+        //link-handling
+        if (preg_match('#discogs\.com/(?:[a-z-]+/)?release/(\d+)#i', $input, $m)
+            || preg_match('/^\d+$/', $input, $m)) {
+
+            $id = (int) ($m[1] ?? $m[0]);
+            $release = $discogs->getRelease($id);
+
+            if (!$discogsService->isVinyl($release)) {
+                return back()->withErrors(['query' => 'Dit is geen vinyl.']);
+            }
+
+            return view('create', ['vinyl' => $release]);
+        }
+
+        //title search
+        $results = $discogs->search($input);
+
+        return view('create', ['vinyl' => null, 'results' => $results['results'] ?? []]);
     }
 
     /**
