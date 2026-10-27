@@ -8,6 +8,7 @@ Route::get('/', function () {
     return view('index');
 });
 
+//VOEG MIDDLEWARE (met ->group()) VOOR AUTH TOE
 Route::resource('/vinyls', VinylController::class);
 Route::post('/vinyls/create', [VinylController::class, 'discogSearch'])->name('vinyls.discogSearch');
 

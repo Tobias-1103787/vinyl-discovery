@@ -60,7 +60,9 @@ class VinylController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        //aanmaken van nieuwe vinyl
+
+        return view('index');
     }
 
     /**
