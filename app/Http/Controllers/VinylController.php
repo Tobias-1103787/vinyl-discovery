@@ -50,9 +50,13 @@ class VinylController extends Controller
         }
 
         //title search
-        $results = $discogs->search($input);
+        $results = collect($discogs->search($input)['results'] ?? [])
+            ->filter(fn ($r) => preg_match('#/(master|release)/#i', $r['uri'] ?? ''))
+            ->filter(fn ($r) => $discogsService->isVinylResult($r))
+            ->values()
+            ->all();
 
-        return view('create', ['vinyl' => null, 'results' => $results['results'] ?? []]);
+        return view('create', ['vinyl' => null, 'results' => $results]);
     }
 
     /**

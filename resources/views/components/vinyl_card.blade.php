@@ -1,6 +1,7 @@
 @props(['vinyl'])
 <x-card class="">
     @php($cover = $vinyl['images'][0]['uri'] ?? $vinyl['thumb'] ?? null)
+    @php($label = collect($vinyl['labels'] ?? [])->pluck('name')->join(', '))
 
     @if ($vinyl)
         <a href="#">
@@ -18,8 +19,13 @@
         <a href="#">
             <h5 class="mt-3 mb-6 text-2xl font-semibold tracking-tight text-heading">{{ $vinyl['title'] }}</h5>
         </a>
-        <p class="mb-6 text-body">{{ collect($vinyl['labels'] ?? [])->pluck('name')->join(', ') }} - {{ $vinyl["released"] }}</p>
+        <p class="mb-6 text-body">{{ $label }}- {{ $vinyl["released"] ?? "unknown release date"}}</p>
         divider
         <p class="mb-6 text-body">{{ $vinyl["artists_sort"] }}</p>
     </div>
+    <form method="POST" action="{{ route('vinyls.store') }}">
+        @csrf
+        <input type="hidden" name="discogs_id" value="{{ $vinyl['id'] }}">
+        <button type="submit">Add vinyl</button>
+    </form>
 </x-card>

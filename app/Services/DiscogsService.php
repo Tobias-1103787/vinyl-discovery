@@ -20,4 +20,9 @@ class DiscogsService
         return collect($release['formats'] ?? [])
             ->contains(fn ($f) => strcasecmp($f['name'] ?? '', 'Vinyl') === 0);
     }
+
+    public function isVinylResult(array $result): bool
+    {
+        return in_array('vinyl', array_map('strtolower', $result['format'] ?? []));
+    }
 }

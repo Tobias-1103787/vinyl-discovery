@@ -8,13 +8,20 @@
     @elseif(!empty($results))
         @isset($results)
             @foreach ($results as $result)
+                @php($id = preg_match('#/(?:master|release)/(\d+)#i', $result['uri'], $m) ? (int) $m[1] : null)
                 <form method="POST" action="{{ route('vinyls.discogSearch') }}">
                     @csrf
-                    <input type="hidden" name="query" value="{{ $result['id'] }}">
-                    <button>{{ $result['title'] }}</button>
+                    <input type="hidden" name="query" value="{{ $id }}">
+                    <button type="submit">{{ $result['title'] }} - {{ $result['uri'] }}</button>
                 </form>
             @endforeach
         @endisset
+    @elseif($errors->any())
+        <ul>
+            @foreach ($errors->all() as $error)
+                <li>{{ $error }}</li>
+            @endforeach
+        </ul>
     @else
         <h2>Enter Discog-link or a title</h2>
         <form method="POST" action="{{ route('vinyls.discogSearch') }}">
