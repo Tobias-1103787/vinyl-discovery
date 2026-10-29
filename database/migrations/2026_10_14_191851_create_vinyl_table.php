@@ -12,16 +12,19 @@ return new class extends Migration
     public function up(): void
     {
         //Vinyl table
-        Schema::create('vinyl', function (Blueprint $table) {
+        Schema::create('vinyls', function (Blueprint $table) {
             $table->id();
             $table->string('title');
-            $table->foreignId('label_id')->constrained();
+            $table->text('description')->nullable();
             $table->string('format');
             $table->string('external_link')->nullable();
-            $table->unsignedBigInteger('discogs_id')->nullable()->index();
+            $table->unsignedBigInteger('discogs_id')->nullable()->unique();
             $table->string('cover_url', 500)->nullable();
-            $table->date('release_date');
+            $table->boolean('intact')->default(true);
+            $table->date('release_date')->nullable();
             $table->foreignId('created_by')->constrained('users');
+            $table->timestamp('created_at');
+            $table->timestamp('updated_at');
         });
     }
 
@@ -30,6 +33,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('vinyl');
+        Schema::dropIfExists('vinyls');
     }
 };

@@ -21,6 +21,7 @@ class DiscogsService
             ->contains(fn ($f) => strcasecmp($f['name'] ?? '', 'Vinyl') === 0);
     }
 
+    //NOTE: isVinylResults lijkt niet goed te werken
     public function isVinylResult(array $result): bool
     {
         return in_array('vinyl', array_map('strtolower', $result['format'] ?? []));

@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Artist extends Model
 {
+    protected $fillable = ['discogs_id', 'name', 'is_band', 'description'];
+
     public function Vinyls(): BelongsToMany {
         return $this->belongsToMany(Vinyl::class);
     }

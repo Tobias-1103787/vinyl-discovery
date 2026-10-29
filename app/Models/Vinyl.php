@@ -9,6 +9,10 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Vinyl extends Model
 {
+    protected $fillable = [
+        'title', 'format', 'external_link', 'discogs_id',
+        'cover_url', 'intact', 'release_date', 'description', 'created_by',
+    ];
     public function favorites(): HasMany
     {
         return $this->hasMany(Favorite::class);
@@ -24,9 +28,9 @@ class Vinyl extends Model
         return $this->belongsToMany(Artist::class);
     }
 
-    public function label(): BelongsTo
+    public function labels(): BelongsToMany
     {
-        return $this->belongsTo(Label::class);
+        return $this->belongsToMany(Label::class);
     }
 
     public function creator(): BelongsTo

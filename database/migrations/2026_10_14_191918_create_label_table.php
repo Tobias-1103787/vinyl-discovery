@@ -12,11 +12,13 @@ return new class extends Migration
     public function up(): void
     {
         //Labels table
-        Schema::create('label', function (Blueprint $table) {
+        Schema::create('labels', function (Blueprint $table) {
             $table->id();
+            $table->unsignedBigInteger('discogs_id')->nullable()->unique();
             $table->string('name');
-            $table->string('description');
-            $table->string('link');
+            $table->string('description')->nullable();
+            $table->timestamp('created_at');
+            $table->timestamp('updated_at');
         });
     }
 
@@ -25,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('label');
+        Schema::dropIfExists('labels');
     }
 };

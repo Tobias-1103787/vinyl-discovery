@@ -13,9 +13,9 @@ return new class extends Migration
     {
         //Genre_connection table
         Schema::create('genre_vinyl', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('vinyl_id')->constrained();
-            $table->foreignId('genre_id')->constrained();
+            $table->foreignId('vinyl_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('genre_id')->constrained()->cascadeOnDelete();
+            $table->primary(['vinyl_id', 'genre_id']);
         });
     }
 

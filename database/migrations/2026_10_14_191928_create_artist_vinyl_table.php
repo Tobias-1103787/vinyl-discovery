@@ -13,9 +13,9 @@ return new class extends Migration
     {
         //Artist_connection table
         Schema::create('artist_vinyl', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('vinyl_id')->constrained();
-            $table->foreignId('artist_id')->constrained();
+            $table->foreignId('vinyl_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('artist_id')->constrained()->cascadeOnDelete();
+            $table->primary(['vinyl_id', 'artist_id']);
         });
     }
 

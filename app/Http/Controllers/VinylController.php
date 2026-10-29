@@ -2,11 +2,16 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Artist;
+use App\Models\Genre;
+use App\Models\Label;
+use App\Models\Vinyl;
 use App\Services\DiscogsService;
 use Illuminate\Http\Request;
 use Calliostro\Discogs\DiscogsClientFactory;
 
 use Illuminate\Support\Facades\DB;
+use Redirect;
 
 class VinylController extends Controller
 {
@@ -16,7 +21,9 @@ class VinylController extends Controller
     public function index()
     {
         //
-        return view('index');
+        $vinyls = Vinyl::with(['labels', 'artists', 'genres'])->latest()->get();
+
+        return view('index', ['vinyls' => $vinyls]);
     }
 
     /**
@@ -62,11 +69,71 @@ class VinylController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(Request $request, DiscogsService $discogsService)
     {
-        //aanmaken van nieuwe vinyl
+        $id = (int) $request->validate(['discogs_id' => 'required|integer'])['discogs_id'];
 
-        return view('index');
+        if (Vinyl::where('discogs_id', $id)->exists()) {
+            return back()->withErrors(['query' => 'Dit album staat al in de database.']);
+        }
+        //aanmaken van nieuwe vinyl
+        $discogs = DiscogsClientFactory::create();
+
+        try {
+            $release = $discogs->getRelease($id);
+        } catch (\Throwable $e) {
+            report($e);
+            return back()->withErrors(['query' => 'Release kon niet worden opgehaald.']);
+        }
+
+        if (!$discogsService->isVinyl($release)) {
+            return back()->withErrors(['query' => 'Dit is geen vinyl.']);
+        }
+
+        $released = $release['released'] ?? '';
+        $releaseDate = preg_match('/^\d{4}-(?!00)\d{2}-(?!00)\d{2}$/', $released) ? $released : null;
+
+        DB::transaction(function() use($release, $releaseDate) {
+           $vinyl = Vinyl::create([
+               'title' => $release['title'],
+               'description' => $release['notes'] ?? null,
+               'format' => $release['formats'][0]['name'] ?? 'Vinyl',
+               'external_link' => $release['uri'] ?? null,
+               'discogs_id' => $release['id'],
+               'cover_url' => $release['images'][0]['uri'] ?? $release['thumb'] ?? null,
+               'release_date' => $releaseDate,
+               'created_by'    => auth()->id(),
+           ]);
+
+           foreach ($release['artists'] as $a) {
+               $artist = Artist::firstOrCreate(
+                   ['discogs_id' => $a['id']],
+                   ['name' => $a['name']]
+               );
+               $artistIds[] = $artist->id;
+           }
+
+           $separatedLabels = collect($release['labels'])->unique('id');
+           foreach ($separatedLabels as $l) {
+               $labels = Label::firstOrCreate(
+                   ['discogs_id' => $l['id']],
+                   ['name' => $l['name']]
+               );
+               $labelIds[] = $labels->id;
+           }
+
+            foreach ($release['genres'] as $g) {
+                $genres = Genre::firstOrCreate(
+                    ['name' => $g]
+                );
+                $genreIds[] = $genres->id;
+            }
+
+           $vinyl->artists()->syncWithoutDetaching($artistIds);
+           $vinyl->labels()->syncWithoutDetaching($labelIds);
+           $vinyl->genres()->syncWithoutDetaching($genreIds);
+        });
+        return Redirect::route('vinyls.index');
     }
 
     /**
