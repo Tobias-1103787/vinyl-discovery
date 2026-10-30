@@ -13,6 +13,16 @@ class Vinyl extends Model
         'title', 'format', 'external_link', 'discogs_id',
         'cover_url', 'intact', 'release_date', 'description', 'created_by',
     ];
+
+    protected static function booted(): void
+    {
+        static::updating(function (Vinyl $vinyl) {
+            if ($vinyl->isDirty() && ! $vinyl->isDirty('intact')) {
+                $vinyl->intact = false;
+            }
+        });
+    }
+
     public function favorites(): HasMany
     {
         return $this->hasMany(Favorite::class);

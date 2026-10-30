@@ -12,6 +12,7 @@ use Calliostro\Discogs\DiscogsClientFactory;
 
 use Illuminate\Support\Facades\DB;
 use Redirect;
+use Illuminate\Support\Facades\Auth;
 
 class VinylController extends Controller
 {
@@ -23,7 +24,7 @@ class VinylController extends Controller
         //
         $vinyls = Vinyl::with(['labels', 'artists', 'genres'])->latest()->get();
 
-        return view('index', ['vinyls' => $vinyls]);
+        return view('vinyls.index', ['vinyls' => $vinyls]);
     }
 
     /**
@@ -31,9 +32,7 @@ class VinylController extends Controller
      */
     public function create()
     {
-        //DB::insert('insert into vinyl ()');
-        //TEMP
-        return view('create', ['vinyl' => null]);
+        return view('vinyls.create', ['vinyl' => null]);
     }
 
     public function discogSearch(Request $request, DiscogsService $discogsService)
@@ -53,7 +52,7 @@ class VinylController extends Controller
                 return back()->withErrors(['query' => 'Dit is geen vinyl.']);
             }
 
-            return view('create', ['vinyl' => $release]);
+            return view('vinyls.create', ['vinyl' => $release]);
         }
 
         //title search
@@ -63,7 +62,7 @@ class VinylController extends Controller
             ->values()
             ->all();
 
-        return view('create', ['vinyl' => null, 'results' => $results]);
+        return view('vinyls.create', ['vinyl' => null, 'results' => $results]);
     }
 
     /**
@@ -141,30 +140,57 @@ class VinylController extends Controller
      */
     public function show(string $id)
     {
-        //
+        $userId = Auth::id();
+        $vinyl = Vinyl::with(['labels', 'artists', 'genres'])->findOrFail($id);
+
+        return view('vinyls.show', ['vinyl' => $vinyl, 'currentUserId' => $userId]);
     }
 
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(string $id)
+    public function edit(Vinyl $vinyl)
     {
-        //
+        abort_unless($vinyl->created_by == auth()->id(), 403);
+
+        return view('vinyls.edit', ['vinyl' => $vinyl]);
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(Request $request, Vinyl $vinyl)
     {
-        //
+        abort_unless($vinyl->created_by == auth()->id(), 403);
+
+        DB::transaction(function() use($request, $vinyl) {
+            $vinyl->updateOrFail($request->validate([
+                'title'        => 'required|string|max:255',
+                'description'  => 'nullable|string',
+                'release_date' => 'nullable|date',
+                'format'       => 'required|string|max:255',
+            ]));
+        });
+
+        return view('vinyls.show', ['vinyl' => $vinyl]);
+    }
+
+    //TO-DO: TOGGLE TOEVOEGEN
+    public function favorite(Vinyl $vinyl){
+        $vinyl->favorites()->firstOrCreate(['user_id' => auth()->id()]);
+
+        return back();
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(Vinyl $vinyl)
     {
-        //
+        abort_unless($vinyl->created_by == auth()->id(), 403);
+
+        $vinyl->delete();
+
+        return redirect('/');
     }
 }
