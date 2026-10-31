@@ -7,8 +7,8 @@ use Illuminate\Support\Facades\Route;
 //VOEG MIDDLEWARE (met ->group()) VOOR AUTH TOE
 Route::get('/', [VinylController::class, 'index'])->name('home');
 Route::resource('/vinyls', VinylController::class)->middleware('auth');;
-Route::post('/vinyls/create', [VinylController::class, 'discogSearch'])->name('vinyls.discogSearch')->middleware('auth');;
-Route::post('/vinyls/{vinyl}/favorite', [VinylController::class, 'vinyls.favorite'])
+Route::post('/vinyls/create', [VinylController::class, 'discogSearch'])->name('vinyls.discogSearch')->middleware('auth');
+Route::post('/vinyls/{vinyl}/favorite', [VinylController::class, 'favorite'])
     ->name('vinyls.favorite')
     ->middleware('auth');
 

@@ -19,10 +19,15 @@ class VinylController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
         //
-        $vinyls = Vinyl::with(['labels', 'artists', 'genres'])->latest()->get();
+        $allowedFilters = ["intact", "favorite", "title"];
+
+        $vinyls = Vinyl::with(['labels', 'artists', 'genres'])
+            ->withExists(['favorites as is_favorite' => fn ($q) => $q->where('user_id', auth()->id())])
+            ->latest()
+            ->get();
 
         return view('vinyls.index', ['vinyls' => $vinyls]);
     }
@@ -61,6 +66,10 @@ class VinylController extends Controller
             ->filter(fn ($r) => $discogsService->isVinylResult($r))
             ->values()
             ->all();
+
+        if(empty($results)){
+            return back()->withErrors(['query' => 'Geen resultaten.']);
+        }
 
         return view('vinyls.create', ['vinyl' => null, 'results' => $results]);
     }
@@ -142,8 +151,9 @@ class VinylController extends Controller
     {
         $userId = Auth::id();
         $vinyl = Vinyl::with(['labels', 'artists', 'genres'])->findOrFail($id);
+        $isFavorite = $vinyl->favorites()->where('user_id', auth()->id())->exists();
 
-        return view('vinyls.show', ['vinyl' => $vinyl, 'currentUserId' => $userId]);
+        return view('vinyls.show', ['vinyl' => $vinyl, 'currentUserId' => $userId, 'isFavorite' => $isFavorite]);
     }
 
     /**
@@ -152,7 +162,6 @@ class VinylController extends Controller
     public function edit(Vinyl $vinyl)
     {
         abort_unless($vinyl->created_by == auth()->id(), 403);
-
         return view('vinyls.edit', ['vinyl' => $vinyl]);
     }
 
@@ -172,12 +181,18 @@ class VinylController extends Controller
             ]));
         });
 
-        return view('vinyls.show', ['vinyl' => $vinyl]);
+        return redirect()->route('vinyls.show', $vinyl);
     }
 
     //TO-DO: TOGGLE TOEVOEGEN
     public function favorite(Vinyl $vinyl){
-        $vinyl->favorites()->firstOrCreate(['user_id' => auth()->id()]);
+        $favorites = $vinyl->favorites()->where('user_id', auth()->id());
+
+        if ($favorites->exists()) {
+            $favorites->delete();
+        } else {
+            $vinyl->favorites()->create(['user_id' => auth()->id()]);
+        }
 
         return back();
     }

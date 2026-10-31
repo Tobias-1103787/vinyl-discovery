@@ -5,12 +5,7 @@
                 <x-vinyl_saved_card :vinyl="$vinyl" :detail="true"/>
 
                 <div class="flex items-center justify-between">
-                    <form method="POST" action="{{ route('vinyls.favorite', $vinyl) }}">
-                        @csrf
-                        <button type="submit" class="rounded bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-500">
-                            Favorite
-                        </button>
-                    </form>
+                    <x-favorite_button :vinyl="$vinyl" :favorite="$isFavorite"/>
                     @if(!empty($currentUserId) and $currentUserId === $vinyl->created_by)
                         <div class="flex items-center gap-2">
                             <a href="{{ route('vinyls.edit', $vinyl) }}"

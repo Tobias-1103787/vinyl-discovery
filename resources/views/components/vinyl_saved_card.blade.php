@@ -20,10 +20,22 @@
                 {{ $vinyl->title }}
             </a>
         </h5>
-        <p class="text-sm text-gray-600">
-            <span class="font-bold">Release date:</span>
-            {{ $vinyl->release_date ?? "Release datum onbekend" }}
-        </p>
+        <div class="mt-auto flex flex-wrap justify-center gap-x-4 gap-y-1">
+            <p class="text-sm text-gray-600">
+                <span class="font-bold">Release date:</span>
+                {{ $vinyl->release_date ?? "Release datum onbekend" }}
+            </p>
+            <p class="text-sm text-gray-600">
+                <span class="font-bold">Label(s):</span>
+                {{ $label ?? "" }}
+            </p>
+            @if($detail)
+                <p class="text-sm text-gray-600">
+                    <span class="font-bold">Intactheid:</span>
+                    {{ $vinyl->intact ? "Intact" : "Aangepast" }}
+                </p>
+            @endif
+        </div>
         <div class="mt-auto flex flex-col gap-3">
             <hr class="border-gray-200">
             <div class="flex flex-wrap justify-center gap-2">
