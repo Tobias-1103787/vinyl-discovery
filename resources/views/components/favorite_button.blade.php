@@ -6,10 +6,8 @@
                 aria-label="{{ $favorite ? 'Verwijder uit favorieten' : 'Voeg toe aan favorieten' }}"
                 class="rounded-full bg-white/80 p-1.5 text-red-600 transition hover:scale-110">
             @if ($favorite)
-                {{-- gevuld hart --}}
                 <img src="{{ asset('images/heart-svgrepo-com.svg') }}" class="size-6">
             @else
-                {{-- hart met alleen een rand --}}
                 <img src="{{ asset('images/heart-seethrough.svg') }}" class="size-6">
             @endif
         </button>

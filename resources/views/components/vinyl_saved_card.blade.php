@@ -46,7 +46,17 @@
                         {{ $artist->name }}
                     </a>
                 @endforeach
+                @if($detail)
+                    @foreach ($vinyl->genres as $genre)
+                        <a href="https://www.discogs.com/search?genre_exact={{ $genre->name }}"
+                           target="_blank"
+                           class="relative z-10 rounded bg-orange-400 px-3 py-1.5 text-sm font-medium text-white hover:bg-orange-300">
+                            {{ $genre->name }}
+                        </a>
+                    @endforeach
+                @endif
             </div>
+
         </div>
         @if($detail)
             <p>{{ $vinyl->description }}</p>

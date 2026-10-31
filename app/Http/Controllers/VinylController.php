@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Artist;
+use App\Models\Favorite;
 use App\Models\Genre;
 use App\Models\Label;
 use App\Models\Vinyl;
@@ -21,27 +22,37 @@ class VinylController extends Controller
      */
     public function index(Request $request)
     {
-        //
-        $allowedFilters = ["intact", "favorite", "title"];
+        $allowedFilters = [
+            'intact'     => 'Origineel',
+            'favorite'   => 'Favorieten',
+            'own_vinyls' => 'Mijn albums',
+        ];
 
         $vinyls = Vinyl::with(['labels', 'artists', 'genres'])
             ->withExists(['favorites as is_favorite' => fn ($q) => $q->where('user_id', auth()->id())])
+            ->when($request->boolean('intact'), fn ($q) => $q->where('intact', true))
+            ->when($request->boolean('favorite'), fn ($q) => $q->whereHas('favorites', fn ($f) => $f->where('user_id', auth()->id())))
+            ->when($request->boolean('own_vinyls'), fn ($q) => $q->where('created_by', auth()->id()))
             ->latest()
             ->get();
 
-        return view('vinyls.index', ['vinyls' => $vinyls]);
+        return view('vinyls.index', ['vinyls' => $vinyls, 'filters' => $allowedFilters]);
     }
-
-    /**
-     * Show the form for creating a new resource.
-     */
     public function create()
     {
+        if (Favorite::where('user_id', Auth::id())->count() < 3) {
+            return back()->withErrors(['error' => 'Je hebt minimaal 3 favorites nodig om een vinyl toe te voegen.']);
+        }
+
         return view('vinyls.create', ['vinyl' => null]);
     }
 
     public function discogSearch(Request $request, DiscogsService $discogsService)
     {
+        if (Favorite::where('user_id', Auth::id())->count() < 3) {
+            return back()->withErrors(['query' => 'Je hebt minimaal 3 favorites nodig om een vinyl toe te voegen.']);
+        }
+
         $discogs = DiscogsClientFactory::create();
 
         $input = trim($request->validate(['query' => 'required|string'])['query']);
@@ -74,11 +85,12 @@ class VinylController extends Controller
         return view('vinyls.create', ['vinyl' => null, 'results' => $results]);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request, DiscogsService $discogsService)
     {
+        if (Favorite::where('user_id', Auth::id())->count() < 3) {
+            return back()->withErrors(['query' => 'Je hebt minimaal 3 favorites nodig om een vinyl toe te voegen.']);
+        }
+
         $id = (int) $request->validate(['discogs_id' => 'required|integer'])['discogs_id'];
 
         if (Vinyl::where('discogs_id', $id)->exists()) {
@@ -144,33 +156,26 @@ class VinylController extends Controller
         return Redirect::route('vinyls.index');
     }
 
-    /**
-     * Display the specified resource.
-     */
     public function show(string $id)
     {
-        $userId = Auth::id();
+        $user = Auth::user();
         $vinyl = Vinyl::with(['labels', 'artists', 'genres'])->findOrFail($id);
         $isFavorite = $vinyl->favorites()->where('user_id', auth()->id())->exists();
 
-        return view('vinyls.show', ['vinyl' => $vinyl, 'currentUserId' => $userId, 'isFavorite' => $isFavorite]);
+        return view('vinyls.show', ['vinyl' => $vinyl, 'currentUser' => $user, 'isFavorite' => $isFavorite]);
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
     public function edit(Vinyl $vinyl)
     {
-        abort_unless($vinyl->created_by == auth()->id(), 403);
+        $user = Auth::user();
+        abort_unless($vinyl->created_by == auth()->id() or $user->admin, 403);
         return view('vinyls.edit', ['vinyl' => $vinyl]);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(Request $request, Vinyl $vinyl)
     {
-        abort_unless($vinyl->created_by == auth()->id(), 403);
+        $user = Auth::user();
+        abort_unless($vinyl->created_by == auth()->id() or $user->admin, 403);
 
         DB::transaction(function() use($request, $vinyl) {
             $vinyl->updateOrFail($request->validate([
@@ -184,7 +189,6 @@ class VinylController extends Controller
         return redirect()->route('vinyls.show', $vinyl);
     }
 
-    //TO-DO: TOGGLE TOEVOEGEN
     public function favorite(Vinyl $vinyl){
         $favorites = $vinyl->favorites()->where('user_id', auth()->id());
 
@@ -197,12 +201,10 @@ class VinylController extends Controller
         return back();
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(Vinyl $vinyl)
     {
-        abort_unless($vinyl->created_by == auth()->id(), 403);
+        $user = Auth::user();
+        abort_unless($vinyl->created_by == auth()->id() or $user->admin, 403);
 
         $vinyl->delete();
 

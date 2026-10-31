@@ -6,7 +6,7 @@
 
                 <div class="flex items-center justify-between">
                     <x-favorite_button :vinyl="$vinyl" :favorite="$isFavorite"/>
-                    @if(!empty($currentUserId) and $currentUserId === $vinyl->created_by)
+                    @if(!empty($currentUser) and $currentUser->id === $vinyl->created_by or $currentUser->admin)
                         <div class="flex items-center gap-2">
                             <a href="{{ route('vinyls.edit', $vinyl) }}"
                                class="rounded bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-500">
