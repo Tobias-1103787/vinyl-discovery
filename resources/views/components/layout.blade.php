@@ -16,12 +16,12 @@
 
             <div class="flex items-center gap-4">
                 @auth
-                    <a href="https://vinyl-discovery.test/vinyls/create"
+                    <a href="{{ route('vinyls.create') }}"
                        class="rounded bg-indigo-600 px-4 py-2 text-sm font-medium hover:bg-indigo-500">
                         New
                     </a>
                     @if(auth()->user()?->admin)
-                        <a href="https://vinyl-discovery.test/vinyls/overview"
+                        <a href="{{ route("vinyls.overview") }}"
                            class="rounded bg-indigo-600 px-4 py-2 text-sm font-medium hover:bg-indigo-500">
                             Overview
                         </a>

@@ -26,6 +26,7 @@ class VinylController extends Controller
         ];
 
         $vinyls = Vinyl::with(['labels', 'artists', 'genres'])
+            ->where('active', true)
             ->withExists(['favorites as is_favorite' => fn ($q) => $q->where('user_id', auth()->id())])
             ->when($request->boolean('intact'), fn ($q) => $q->where('intact', true))
             ->when($request->boolean('favorite'), fn ($q) => $q->whereHas('favorites',
@@ -92,7 +93,9 @@ class VinylController extends Controller
 
     public function store(Request $request, DiscogsService $discogsService)
     {
-        if (Favorite::where('user_id', Auth::id())->count() < 3) {
+        $user = Auth::user();
+
+        if (! $user->admin && Favorite::where('user_id', $user->id)->count() < 3) {
             return back()->withErrors(['query' => 'Je hebt minimaal 3 favorites nodig om een vinyl toe te voegen.']);
         }
 
@@ -164,7 +167,10 @@ class VinylController extends Controller
     public function show(string $id)
     {
         $user = Auth::user();
-        $vinyl = Vinyl::with(['labels', 'artists', 'genres'])->findOrFail($id);
+        $vinyl = Vinyl::with(['labels', 'artists', 'genres'])
+            ->when(! auth()->user()->admin, fn ($q) => $q->where('active', true))
+            ->findOrFail($id);
+
         $isFavorite = $vinyl->favorites()->where('user_id', auth()->id())->exists();
 
         return view('vinyls.show', ['vinyl' => $vinyl, 'currentUser' => $user, 'isFavorite' => $isFavorite]);
@@ -173,14 +179,17 @@ class VinylController extends Controller
     public function edit(Vinyl $vinyl)
     {
         $user = Auth::user();
-        abort_unless($vinyl->created_by == auth()->id() or $user->admin, 403);
+        abort_unless($user->admin ||
+            ($vinyl->created_by == $user->id && $vinyl->active), 403);
+
         return view('vinyls.edit', ['vinyl' => $vinyl]);
     }
 
     public function update(Request $request, Vinyl $vinyl)
     {
         $user = Auth::user();
-        abort_unless($vinyl->created_by == auth()->id() or $user->admin, 403);
+        abort_unless($user->admin ||
+            ($vinyl->created_by == $user->id && $vinyl->active), 403);
 
         $data = $request->validate([
             'title'        => 'required|string|max:255',
@@ -215,11 +224,24 @@ class VinylController extends Controller
     }
 
     public function overview(){
-        $vinyls = Vinyl::all();
+        $user = Auth::user();
+        abort_unless($user->admin, 403);
+
+        $vinyls = Vinyl::with('creator')->latest()->get();
 
         return view('vinyls.overview', ['vinyls' => $vinyls]);
     }
 
+    public function changeStatus(Request $request, Vinyl $vinyl){
+        $user = Auth::user();
+        abort_unless($user->admin, 403);
+
+        $vinyl->update($request->validate([
+            'active' => 'required|boolean',
+        ]));
+
+        return redirect()->route('vinyls.show', $vinyl);
+    }
 
     public function destroy(Vinyl $vinyl)
     {

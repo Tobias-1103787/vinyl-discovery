@@ -16,9 +16,13 @@
             {{ $vinyl->format }}
         </span>
         <h5 class="text-xl font-semibold text-gray-900">
-            <a href="{{ route('vinyls.show', $vinyl->id) }}" class="after:absolute after:inset-0">
+            @if($detail)
                 {{ $vinyl->title }}
-            </a>
+            @else
+                <a href="{{ route('vinyls.show', $vinyl->id) }}" class="after:absolute after:inset-0">
+                    {{ $vinyl->title }}
+                </a>
+            @endif
         </h5>
         <div class="mt-auto flex flex-wrap justify-center gap-x-4 gap-y-1">
             <p class="text-sm text-gray-600">

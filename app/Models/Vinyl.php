@@ -11,7 +11,7 @@ class Vinyl extends Model
 {
     protected $fillable = [
         'title', 'format', 'external_link', 'discogs_id',
-        'cover_url', 'intact', 'release_date', 'description', 'created_by',
+        'cover_url', 'intact', 'active', 'release_date', 'description', 'created_by',
     ];
 
     protected static function booted(): void

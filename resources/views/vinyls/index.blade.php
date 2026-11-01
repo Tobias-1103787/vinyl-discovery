@@ -20,7 +20,6 @@
                         </label>
                     @endforeach
                 </div>
-
                 <div class="flex gap-2">
                     <input type="text" name="searchValue" value="{{ request('searchValue') }}" placeholder="Zoek op titel of artiest"
                            class="rounded border border-gray-300 px-3 py-1.5 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500">
