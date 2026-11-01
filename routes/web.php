@@ -9,7 +9,7 @@ Route::get('/vinyls/overview', [VinylController::class, 'overview'])
     ->name('vinyls.overview')
     ->middleware('auth');
 Route::resource('/vinyls', VinylController::class)
-    ->middleware('auth');;
+    ->middleware('auth');
 Route::post('/vinyls/create', [VinylController::class, 'discogSearch'])
     ->name('vinyls.discogSearch')
     ->middleware('auth');
