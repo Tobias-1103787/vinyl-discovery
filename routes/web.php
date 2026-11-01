@@ -11,6 +11,9 @@ Route::post('/vinyls/create', [VinylController::class, 'discogSearch'])->name('v
 Route::post('/vinyls/{vinyl}/favorite', [VinylController::class, 'favorite'])
     ->name('vinyls.favorite')
     ->middleware('auth');
+Route::get('/vinyls/overview', [VinylController::class, 'overview'])
+    ->name('vinyls.overview')
+    ->middleware('auth');
 
 Route::get('/dashboard', function () {
     return view('dashboard');

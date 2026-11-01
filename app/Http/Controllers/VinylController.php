@@ -17,13 +17,10 @@ use Illuminate\Support\Facades\Auth;
 
 class VinylController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index(Request $request)
     {
         $allowedFilters = [
-            'intact'     => 'Origineel',
+            'intact'     => 'Intact',
             'favorite'   => 'Favorieten',
             'own_vinyls' => 'Mijn albums',
         ];
@@ -31,8 +28,16 @@ class VinylController extends Controller
         $vinyls = Vinyl::with(['labels', 'artists', 'genres'])
             ->withExists(['favorites as is_favorite' => fn ($q) => $q->where('user_id', auth()->id())])
             ->when($request->boolean('intact'), fn ($q) => $q->where('intact', true))
-            ->when($request->boolean('favorite'), fn ($q) => $q->whereHas('favorites', fn ($f) => $f->where('user_id', auth()->id())))
+            ->when($request->boolean('favorite'), fn ($q) => $q->whereHas('favorites',
+                fn ($f) => $f->where('user_id', auth()->id())))
             ->when($request->boolean('own_vinyls'), fn ($q) => $q->where('created_by', auth()->id()))
+            ->when($request->filled('searchValue'), function ($q) use ($request) {
+                $term = '%' . $request->input('searchValue') . '%';
+                $q->where(function ($q) use ($term) {
+                    $q->where('title', 'like', $term)
+                        ->orWhereHas('artists', fn ($a) => $a->where('name', 'like', $term));
+                });
+            })
             ->latest()
             ->get();
 
@@ -177,14 +182,22 @@ class VinylController extends Controller
         $user = Auth::user();
         abort_unless($vinyl->created_by == auth()->id() or $user->admin, 403);
 
-        DB::transaction(function() use($request, $vinyl) {
-            $vinyl->updateOrFail($request->validate([
-                'title'        => 'required|string|max:255',
-                'description'  => 'nullable|string',
-                'release_date' => 'nullable|date',
-                'format'       => 'required|string|max:255',
-            ]));
-        });
+        $data = $request->validate([
+            'title'        => 'required|string|max:255',
+            'description'  => 'nullable|string',
+            'release_date' => 'nullable|date',
+            'format'       => 'required|string|max:255',
+        ]);
+        $data['description'] = isset($data['description'])
+            ? str_replace("\r\n", "\n", $data['description']) : null;
+
+        $vinyl->fill($data);
+
+        if (! $vinyl->isDirty()) {
+            return back()->withErrors(['error' => 'Geen wijzigingen uitgevoerd.']);
+        }
+
+        $vinyl->save();
 
         return redirect()->route('vinyls.show', $vinyl);
     }
@@ -200,6 +213,13 @@ class VinylController extends Controller
 
         return back();
     }
+
+    public function overview(){
+        $vinyls = Vinyl::all();
+
+        return view('vinyls.overview', ['vinyls' => $vinyls]);
+    }
+
 
     public function destroy(Vinyl $vinyl)
     {

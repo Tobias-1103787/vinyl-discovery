@@ -20,7 +20,12 @@
                        class="rounded bg-indigo-600 px-4 py-2 text-sm font-medium hover:bg-indigo-500">
                         New
                     </a>
-
+                    @if(auth()->user()?->admin)
+                        <a href="https://vinyl-discovery.test/vinyls/overview"
+                           class="rounded bg-indigo-600 px-4 py-2 text-sm font-medium hover:bg-indigo-500">
+                            Overview
+                        </a>
+                    @endif
                     <form method="POST" action="{{ route('logout') }}">
                         @csrf
                         <button type="submit" class="text-sm hover:text-gray-300">Log out</button>
